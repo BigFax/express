@@ -957,6 +957,28 @@ describe('app.router', function(){
       .expect(200, 'success', done)
     })
   })
+  describe('when next("last") is called', function () {
+    it('should skip to the last piece of middleware', function(done){
+      var app = express()
+
+      function fn (req, res, next) {
+        res.set('X-Hit', '1')
+        next('last')
+      }
+      function badFunc (req, res, next) {
+        res.end('failure')
+      }
+      function lastFunc (req, res, next) {
+        res.end('success')
+      }
+      app.get('/foo', fn, badFunc, badFunc, badFunc, lastFunc)
+
+      request(app)
+      .get('/foo')
+      .expect('X-Hit', '1')
+      .expect(200, 'success', done)
+    })
+  })
 
   describe('when next(err) is called', function(){
     it('should break out of app.router', function(done){
